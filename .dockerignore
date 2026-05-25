@@ -1,0 +1,41 @@
+# Keep the build context tiny: only the slim runtime (requirements.txt, src/app,
+# src/config.py, src/__init__.py, and models/*.onnx) should reach the image.
+
+# VCS / CI / docs
+.git/
+.gitignore
+.gitattributes
+.github/
+*.md
+
+# Python caches & environments
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Training-only code & deps (not needed by the inference service)
+requirements-train.txt
+scripts/
+src/data/
+src/model/
+tests/
+
+# Data & training artifacts
+data/
+models/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+wandb/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

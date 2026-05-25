@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Secrets / local env
+.env
+.env.*
+
+# Experiment tracking
+wandb/
+
+# Dataset — downloaded ISIC 2018 (see data/README.md); keep only the README
+/data/*
+!/data/README.md
+
+# Model artifacts — ignore training checkpoints; the small ONNX model in
+# models/ is committed via git-lfs (NOT ignored).
+/models/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

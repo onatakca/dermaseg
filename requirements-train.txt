@@ -1,0 +1,14 @@
+# Training / evaluation / ONNX-export dependencies (heavy; NOT installed in the
+# production image). Use a Python 3.11–3.12 venv. For a CUDA build of torch, see
+# https://pytorch.org/get-started/locally/ and install torch from the CUDA index.
+torch>=2.2
+transformers>=4.40
+albumentations>=1.4
+wandb>=0.17
+onnx>=1.16
+onnxruntime>=1.18          # parity check against torch in scripts/export_onnx.py
+scikit-learn>=1.4          # evaluation metrics
+tqdm>=4.66
+requests>=2.31             # dataset download
+numpy>=1.26,<3
+pillow>=10.2

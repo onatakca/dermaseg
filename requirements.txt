@@ -1,0 +1,10 @@
+# Slim INFERENCE dependencies — the ONLY set installed in the Docker image.
+# Deliberately no torch / transformers here (those live in requirements-train.txt),
+# which keeps the production container small and fast. Freeze exact versions with
+# `pip freeze` once the inference env is validated (Phase 6/8).
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30
+onnxruntime>=1.18
+pillow>=10.2
+numpy>=1.26,<3
+python-multipart>=0.0.9   # required for FastAPI file uploads (POST /predict)

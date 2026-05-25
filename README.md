@@ -1,1 +1,94 @@
 # dermaseg
+
+Skin-lesion boundary segmentation with a fine-tuned **SegFormer**, served as a Dockerized **FastAPI** app on **Google Cloud Run**. Trained on **ISIC 2018 (Task 1)** and exported to **ONNX** for fast, lightweight CPU inference.
+
+> ⚠️ **Disclaimer — research / educational use only.** This is **not a medical device** and must not be used for diagnosis or any clinical decision-making. It is trained on the public ISIC 2018 dataset and its predictions can be wrong. See [Dataset & license](#dataset--license).
+
+**Live demo:** _TBD (Cloud Run URL)_
+
+---
+
+## Overview
+
+`dermaseg` takes a dermoscopic image and predicts a binary lesion mask, returning a mask overlay plus the lesion's area as a percentage of the image. The point of the project is an end-to-end computer-vision workflow: **train a segmentation model and ship it to production** as a small, fast service.
+
+## Results
+
+Metrics on the held-out ISIC 2018 test split (filled in after Phase 4):
+
+| Metric | Score |
+| --- | --- |
+| DICE | _TBD_ |
+| Mean IoU | _TBD_ |
+| Pixel accuracy | _TBD_ |
+| CPU inference latency | _TBD_ |
+
+## Architecture
+
+_TBD — diagram._
+
+- **Model:** SegFormer (`nvidia/mit-b1`), binary head (`num_labels=2`), combined Dice + Cross-Entropy loss.
+- **Training:** PyTorch + 🤗 Transformers, albumentations augmentation, Weights & Biases logging.
+- **Serving:** the trained model is exported to **ONNX** and served with **onnxruntime** — no PyTorch in the production image. FastAPI exposes `GET /`, `GET /health`, `POST /predict`.
+- **Deploy:** multi-stage Docker image on Google Cloud Run (`europe-west4`, scale-to-zero).
+
+See [`starter_plan.md`](./starter_plan.md) for the full design and the phase-by-phase build order, and [`CLAUDE.md`](./CLAUDE.md) for the locked technical decisions.
+
+## Setup
+
+Use Python **3.11 or 3.12** (best PyTorch / onnxruntime support).
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+
+# Inference only (slim — what the container installs):
+pip install -r requirements.txt
+
+# Full training/dev environment (training + inference + tooling):
+pip install -r requirements.txt -r requirements-train.txt
+pip install -e ".[dev]"          # ruff, pytest, httpx
+```
+
+Committed model weights use **git-lfs**:
+
+```bash
+brew install git-lfs   # if not already installed
+git lfs install
+```
+
+## Usage
+
+> Training scripts are stubs until their phases land — see [`starter_plan.md`](./starter_plan.md).
+
+```bash
+# Data + model pipeline
+python scripts/download_data.py    # fetch ISIC 2018 Task 1 -> data/   (Phase 2)
+python scripts/train.py            # fine-tune SegFormer, log to W&B    (Phase 3)
+python scripts/evaluate.py         # DICE / mIoU / pixel-acc on test    (Phase 4)
+python scripts/export_onnx.py      # export ONNX + verify torch parity  (Phase 5)
+
+# Run the API locally (Phase 6)
+uvicorn src.app.main:app --reload  # http://127.0.0.1:8000  (GET /health, POST /predict)
+
+# Lint / format / test
+ruff check .
+ruff format .
+pytest
+
+# Container (Phase 8)
+docker build -t dermaseg .
+docker run -p 8080:8080 dermaseg
+```
+
+## Dataset & license
+
+Trained on the **ISIC 2018 Challenge, Task 1: Lesion Boundary Segmentation** dataset. The data is **not redistributed in this repo** — see [`data/README.md`](./data/README.md) for download instructions. ISIC data is released under a **non-commercial (CC BY-NC)** license; review the terms and cite the source:
+
+- ISIC 2018 data: https://challenge.isic-archive.com/data/#2018
+
+_(Add the full BibTeX citations after download — Phase 2.)_
+
+## License
+
+_TBD._
