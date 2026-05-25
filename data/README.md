@@ -6,6 +6,12 @@ The dataset is **not** committed (everything in `data/` except this file is giti
 python scripts/download_data.py
 ```
 
+> **Size & disk:** the training-images zip is **~11 GB** (2594 full-resolution
+> dermoscopy images); the ground-truth masks are ~27 MB. Keep ~25 GB free during
+> setup — the zip is deleted after extraction. The script is idempotent (re-runs
+> skip completed work); pass `--force` to redownload. It uses only the Python
+> standard library, so it runs without the training dependencies installed.
+
 ## Expected layout
 
 The script should produce (under `data/isic2018/`, i.e. `config.RAW_DATA_DIR`):
