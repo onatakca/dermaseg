@@ -65,6 +65,7 @@ def main() -> None:
         dynamic_axes={"pixel_values": {0: "batch"}, "logits": {0: "batch"}},
         opset_version=args.opset,
         do_constant_folding=True,
+        dynamo=False,  # legacy TorchScript exporter (avoids the onnxscript dependency)
     )
 
     with torch.no_grad():

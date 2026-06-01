@@ -86,36 +86,26 @@ docker run -p 8080:8080 dermaseg
 
 ## Training (Colab / cloud GPU)
 
-Training runs on a CUDA GPU; the local machine is only for dev + serving. On a Colab GPU runtime:
+Training runs on a CUDA GPU; the local machine is only for dev + serving. Use either the **Colab browser** or the **Colab extension for VS Code** — both give you a *notebook* on a Colab GPU runtime where shell commands run with a `!` prefix (there's no separate terminal). In VS Code: install the *Google Colab* + *Jupyter* extensions, open a notebook, click the kernel picker → **Select Another Kernel…** → **Colab** → **New Colab Server**, sign in, then pick your GPU (Pro: A100/L4, or T4).
+
+**Easiest path:** open [`notebooks/train_colab.ipynb`](./notebooks/train_colab.ipynb) on the runtime and run it top to bottom. The cells below are the same steps if you'd rather run them by hand.
+
+Push your latest code to GitHub first (the runtime clones from origin), then run these cells:
 
 ```python
 !git clone https://github.com/onatakca/dermaseg.git
 %cd dermaseg
 !pip install -q -r requirements-train.txt
-!python scripts/download_data.py            # ~11 GB into the Colab VM
-import wandb; wandb.login()                  # paste W&B key (or pass --no-wandb)
-!python scripts/train.py --epochs 50 --batch-size 8
+!python scripts/download_data.py                  # ~11 GB to the VM's local disk
+import wandb; wandb.login()                        # or add --no-wandb to train.py
+!python scripts/train.py       --epochs 50 --batch-size 8
+!python scripts/evaluate.py    --checkpoint models/checkpoints --readme
+!python scripts/export_onnx.py --checkpoint models/checkpoints --output models/segformer.onnx
 ```
 
-The best checkpoint (by validation DICE) is saved to `models/checkpoints/` in 🤗 format.
+**Getting the model back.** The runtime is **ephemeral**, so the notebook's last cell **pushes `models/segformer.onnx` (~20 MB) + `metrics.json` straight back to GitHub via git-lfs** — reliable in both browser and VS Code Colab, with no flaky `files.download()` or Drive mount. It needs a GitHub fine-grained PAT with *Contents: Read/Write*. Then locally, once: `brew install git-lfs && git lfs install`, followed by `git pull`. To also survive a disconnect *mid-training*, mount Drive and add `--output-dir /content/drive/MyDrive/dermaseg/ckpt` to the scripts (browser: `from google.colab import drive; drive.mount('/content/drive')`; the VS Code mount is unreliable).
 
-### VS Code on a Colab runtime
-
-Connect VS Code to your Colab GPU runtime and open a terminal on it. The runtime's filesystem is **ephemeral**, so save outputs to a mounted Google Drive, and push your latest code to GitHub before cloning.
-
-```bash
-git clone https://github.com/onatakca/dermaseg.git && cd dermaseg
-pip install -q -r requirements-train.txt
-python scripts/download_data.py                        # ~11 GB to the VM's local disk (fast)
-wandb login                                            # or pass --no-wandb to train.py
-
-CKPT=/content/drive/MyDrive/dermaseg/ckpt              # Drive path survives disconnects
-python scripts/train.py      --epochs 50 --batch-size 8 --output-dir "$CKPT"
-python scripts/evaluate.py   --checkpoint "$CKPT" --readme
-python scripts/export_onnx.py --checkpoint "$CKPT" --output "$CKPT/segformer.onnx"
-```
-
-Train reads images from local disk — don't train off Drive's FUSE mount (per-file latency is brutal). Bring back just `segformer.onnx` and the metrics, then commit the ONNX locally via git-lfs.
+Don't train off Drive's FUSE mount — per-file latency over ~1,800 images/epoch is brutal; keep the dataset on local disk.
 
 ## Dataset & license
 
